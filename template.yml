@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Deploy Lambda to fetch current temperature for New York using CodePipeline
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.11
+    MemorySize: 128
+
+Resources:
+  WeatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: FetchWeatherNYC
+      Handler: app.lambda_handler
+      CodeUri: .
+      Description: Fetches current temperature of New York City from OpenWeatherMap API
+      Environment:
+        Variables:
+          CITY: "New York"
+          API_KEY: !Ref OpenWeatherAPIKey
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+  OpenWeatherAPIKey:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /weather/api/key
+      Type: String
+      Value: "<INSERT_YOUR_API_KEY>"  # Replace or manage via Parameter Store
+
+Outputs:
+  WeatherFunctionArn:
+    Description: "ARN of the Lambda Function"
+    Value: !GetAtt WeatherFunction.Arn
